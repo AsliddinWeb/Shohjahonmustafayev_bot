@@ -6,21 +6,19 @@ load_dotenv()
 # Bot token
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-# Owner (asosiy admin) - bu o'zgarmas
+# Owner (asosiy admin)
 OWNER_ID = int(os.getenv("OWNER_ID"))
 
 # Kanal
-CHANNEL_ID = os.getenv("CHANNEL_ID")  # @username yoki -100xxxxxxxxxx
-CHANNEL_URL = os.getenv("CHANNEL_URL")  # https://t.me/channel_name
+CHANNEL_ID = os.getenv("CHANNEL_ID")
+CHANNEL_URL = os.getenv("CHANNEL_URL")
 
 # Yopiq kanal (to'lov qilganlar uchun)
 PRIVATE_CHANNEL_URL = os.getenv("PRIVATE_CHANNEL_URL")
-
-# Dumaloq video xabar
-WELCOME_VIDEO_URL = "https://t.me/botkanal1234/2"
+PRIVATE_CHANNEL_ID = int(os.getenv("PRIVATE_CHANNEL_ID"))
 
 # Admin username (yordam uchun)
-ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")  # @admin_username
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
 
 # To'lov summasi
 PAYMENT_AMOUNT = 97000

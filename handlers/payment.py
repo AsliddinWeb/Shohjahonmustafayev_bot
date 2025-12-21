@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 from middlewares.admin_check import admin_required_callback
-from keyboards.inline import get_pending_payments_keyboard, get_back_keyboard, get_payment_confirm_keyboard
+from keyboards.inline import get_pending_payments_keyboard, get_back_keyboard
 from services.payment_service import (
     get_payment,
     get_pending_payments,
@@ -10,7 +10,7 @@ from services.payment_service import (
     get_payment_stats
 )
 from services.user_service import get_user
-from config import PRIVATE_CHANNEL_URL
+from config import PRIVATE_CHANNEL_ID
 
 
 @admin_required_callback
@@ -88,8 +88,6 @@ async def payment_stats_callback(update: Update, context: ContextTypes.DEFAULT_T
 
 async def confirm_payment_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-
-    # Payment ID ni olish
     payment_id = int(query.data.split("_")[-1])
     admin_id = query.from_user.id
 
@@ -104,56 +102,53 @@ async def confirm_payment_callback(update: Update, context: ContextTypes.DEFAULT
     payment = await get_payment(payment_id)
     user_chat_id = payment['chat_id']
 
-    # ▶️ 1 martalik invite link yaratamiz
+    # Bir martalik invite link yaratish
     try:
         invite = await context.bot.create_chat_invite_link(
-            chat_id=-1003601282396,  # yoki ID bo‘lishi mumkin
+            chat_id=PRIVATE_CHANNEL_ID,
             member_limit=1
         )
         invite_link = invite.invite_link
     except Exception as e:
-        print("❗ Invite link yaratishda xato:", e)
-        invite_link = PRIVATE_CHANNEL_URL  # fallback
+        print(f"Invite link yaratishda xato: {e}")
+        invite_link = None
 
-    # ▶️ Userga link yuboramiz
-    try:
-        await context.bot.send_message(
-            chat_id=user_chat_id,
-            text=f"""
-    🎉 <b>Tabriklaymiz!</b>
-
-    Sizning to‘lovingiz tasdiqlandi!
-
-    🔗 Yopiq kanalda qatnashish uchun maxsus link:
-    {invite_link}
-
-    ⚠️ Link faqat bir martalik.
-    """,
-            parse_mode='HTML'
-        )
-    except Exception as e:
-        print("❗ Userga xabar yuborishda xato:", e)
-
-    await query.answer("✅ To'lov tasdiqlandi!", show_alert=True)
-
-    await query.message.edit_caption(
-        caption=query.message.caption + f"\n\n✅ <b>TASDIQLANDI</b>\n👤 Admin: {admin_id}",
-        parse_mode='HTML'
-    )
+    # Foydalanuvchiga xabar yuborish
+    if invite_link:
+        try:
+            await context.bot.send_message(
+                chat_id=user_chat_id,
+                text=f"🎉 <b>Tabriklaymiz!</b>\n\n"
+                     f"Sizning to'lovingiz tasdiqlandi!\n\n"
+                     f"🔗 Yopiq kanalga kirish uchun link:\n{invite_link}\n\n"
+                     f"⚠️ Link faqat bir martalik!",
+                parse_mode='HTML'
+            )
+        except Exception as e:
+            print(f"Foydalanuvchiga xabar yuborishda xato: {e}")
+    else:
+        try:
+            await context.bot.send_message(
+                chat_id=user_chat_id,
+                text="🎉 <b>Tabriklaymiz!</b>\n\n"
+                     "Sizning to'lovingiz tasdiqlandi!\n\n"
+                     "⚠️ Admin siz bilan tez orada bog'lanadi.",
+                parse_mode='HTML'
+            )
+        except Exception as e:
+            print(f"Foydalanuvchiga xabar yuborishda xato: {e}")
 
     await query.answer("✅ To'lov tasdiqlandi!", show_alert=True)
 
     # Xabarni yangilash
     await query.message.edit_caption(
-        caption=query.message.caption + f"\n\n✅ <b>TASDIQLANDI</b>\n👤 Admin: {admin_id}",
+        caption=query.message.caption + f"\n\n✅ <b>TASDIQLANDI</b>\n👤 Admin: <code>{admin_id}</code>",
         parse_mode='HTML'
     )
 
 
 async def reject_payment_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-
-    # Payment ID ni olish
     payment_id = int(query.data.split("_")[-1])
     admin_id = query.from_user.id
 
@@ -184,6 +179,6 @@ async def reject_payment_callback(update: Update, context: ContextTypes.DEFAULT_
 
     # Xabarni yangilash
     await query.message.edit_caption(
-        caption=query.message.caption + f"\n\n❌ <b>RAD ETILDI</b>\n👤 Admin: {admin_id}",
+        caption=query.message.caption + f"\n\n❌ <b>RAD ETILDI</b>\n👤 Admin: <code>{admin_id}</code>",
         parse_mode='HTML'
     )
