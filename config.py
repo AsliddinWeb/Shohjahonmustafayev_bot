@@ -21,7 +21,7 @@ PRIVATE_CHANNEL_ID = int(os.getenv("PRIVATE_CHANNEL_ID"))
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
 
 # To'lov summasi
-PAYMENT_AMOUNT = 97000
+PAYMENT_AMOUNT = 47000
 
 # Database
 DB_PATH = "bot.db"
